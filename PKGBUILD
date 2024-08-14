@@ -7,11 +7,7 @@ pkgrel=1
 pkgdesc="Community-maintained fork of Firefox, focused on privacy, security and freedom."
 url="https://librewolf.net/"
 arch=(x86_64 aarch64)
-license=(
-  GPL
-  LGPL
-  MPL
-)
+license=(MPL-2.0)
 depends=(
   dbus
   alsa-lib
@@ -90,12 +86,16 @@ install='librewolf.install'
 source=(
   https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/${pkgver}-${pkgrel}/librewolf-${pkgver}-${pkgrel}.source.tar.gz # {,.sig} sig files are currently broken, it seems
   $pkgname.desktop
-  "default192x192.png"
+  default192x192.png
+  remove_unneeded_locales.patch
+  xdg_dirs.patch
 )
 
 sha256sums=('f3ed5c73c6e07fcff42d5006746aa3cb285b86014004f138b11f891d38878142'
             '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
-            '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1')
+            '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1'
+            'e8109bc6faabb2e86fa9665dfc088dff0844970c1e616ffa872eda881ddde740'
+            '6db2c2b6ba0022e405ce835796d6b730fbf44552f45c039103958db8758e3409')
 
 validpgpkeys=('034F7776EF5E0C613D2F7934D29FBD5F93C0CFC3') # maltej(?)
 
@@ -105,7 +105,11 @@ _build_profiled_x86_64=true
 
 prepare() {
   mkdir -p mozbuild
+
   cd librewolf-$pkgver-$pkgrel
+
+  patch -Np1 -i ../remove_unneeded_locales.patch
+  patch -Np1 -i ../xdg_dirs.patch
 
   mv mozconfig ../mozconfig
 
