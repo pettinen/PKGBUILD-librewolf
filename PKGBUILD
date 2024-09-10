@@ -2,7 +2,7 @@
 
 pkgname=librewolf
 _pkgname=LibreWolf
-pkgver=129.0
+pkgver=129.0.2
 pkgrel=1
 pkgdesc="Community-maintained fork of Firefox, focused on privacy, security and freedom."
 url="https://librewolf.net/"
@@ -87,17 +87,17 @@ source=(
   https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/${pkgver}-${pkgrel}/librewolf-${pkgver}-${pkgrel}.source.tar.gz # {,.sig} sig files are currently broken, it seems
   $pkgname.desktop
   default192x192.png
+  ${_arch_git}/f5580e563ac0dc7f0095af92bc59d849f0f45849/0004-Bug-1912663-Fix-some-build-issues-with-cbindgen-0.27.patch
   remove_unneeded_locales.patch
   xdg_dirs.patch
 )
 
-sha256sums=(
-  'ff03845699e62aa68f31fb7b17193636e9e8a63dd824011f3d84059574c9b09d'
-  '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
-  '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1'
-  'e8109bc6faabb2e86fa9665dfc088dff0844970c1e616ffa872eda881ddde740'
-  '9b514a379f1255f258b9b9a82e86ba0d4ef768f4eefdff6a039779e37649b4fb'
-)
+sha256sums=('7308bf8765201746babca8638177b81252d85831b20ab721bc02dd4f83c032f1'
+            '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
+            '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1'
+            'dd2aba1c02c21b89ceed0713a6aa0241365fe79b1e3a4d21cdcd7231db6fab5e'
+            'e8109bc6faabb2e86fa9665dfc088dff0844970c1e616ffa872eda881ddde740'
+            '9b514a379f1255f258b9b9a82e86ba0d4ef768f4eefdff6a039779e37649b4fb')
 
 validpgpkeys=('034F7776EF5E0C613D2F7934D29FBD5F93C0CFC3') # maltej(?)
 
@@ -180,6 +180,10 @@ END
 fi
 
   # upstream Arch fixes
+
+  # Fix build with cinbdgen 0.27.0
+  # https://bugzilla.mozilla.org/show_bug.cgi?id=1912663
+  patch -Np1 -i ../0004-Bug-1912663-Fix-some-build-issues-with-cbindgen-0.27.patch
 
 }
 
