@@ -1,7 +1,7 @@
 diff --unified --recursive --text a/lw/librewolf.cfg b/lw/librewolf.cfg
---- a/lw/librewolf.cfg  2024-08-13 10:28:39.000000000 +0300
-+++ b/lw/librewolf.cfg  2024-08-14 23:05:44.694157439 +0300
-@@ -545,7 +545,10 @@
+--- a/lw/librewolf.cfg	2024-10-06 19:29:25.000000000 +0300
++++ b/lw/librewolf.cfg	2024-10-09 15:16:37.446273890 +0300
+@@ -731,7 +731,10 @@
   * allow settings to be overriden with a file placed in the right location
   * https://librewolf.net/docs/settings/#where-do-i-find-my-librewolfoverridescfg
   */
@@ -15,9 +15,9 @@ diff --unified --recursive --text a/lw/librewolf.cfg b/lw/librewolf.cfg
 +} else if (profile_directory) {
 +  defaultPref('autoadmin.global_config_url', `file://${profile_directory}/.config/librewolf/librewolf.overrides.cfg`);
  }
-diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/librewolf-129.0-1/toolkit/xre/nsXREDirProvider.cpp
---- a/toolkit/xre/nsXREDirProvider.cpp	2024-08-13 10:28:39.000000000 +0300
-+++ b/toolkit/xre/nsXREDirProvider.cpp	2024-08-13 22:44:08.767983934 +0300
+diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
+--- a/toolkit/xre/nsXREDirProvider.cpp	2024-10-06 19:29:25.000000000 +0300
++++ b/toolkit/xre/nsXREDirProvider.cpp	2024-10-09 15:16:37.449607253 +0300
 @@ -11,6 +11,7 @@
  
  #include "jsapi.h"
@@ -211,9 +211,9 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/librewolf
  
    if (!profile.IsEmpty()) {
      // Skip any leading path characters
-diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/librewolf-129.0-1/toolkit/xre/nsXREDirProvider.h
---- a/toolkit/xre/nsXREDirProvider.h	2024-08-01 20:32:14.000000000 +0300
-+++ b/toolkit/xre/nsXREDirProvider.h	2024-08-13 22:38:51.728734624 +0300
+diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
+--- a/toolkit/xre/nsXREDirProvider.h	2024-09-23 21:00:17.000000000 +0300
++++ b/toolkit/xre/nsXREDirProvider.h	2024-10-09 15:16:37.449607253 +0300
 @@ -74,6 +74,14 @@
  
    static nsresult GetUserDataDirectory(nsIFile** aFile, bool aLocal);
@@ -229,18 +229,18 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/librewolf-1
    /* make sure you clone it, if you need to do stuff to it */
    nsIFile* GetGREDir() { return mGREDir; }
    nsIFile* GetGREBinDir() { return mGREBinDir; }
-diff --unified --recursive --text a/xpcom/io/moz.build b/librewolf-129.0-1/xpcom/io/moz.build
---- a/xpcom/io/moz.build	2024-08-01 20:32:14.000000000 +0300
-+++ b/xpcom/io/moz.build	2024-08-13 22:39:14.625569409 +0300
+diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
+--- a/xpcom/io/moz.build	2024-09-23 21:00:17.000000000 +0300
++++ b/xpcom/io/moz.build	2024-10-09 15:16:37.449607253 +0300
 @@ -160,4 +160,5 @@
  LOCAL_INCLUDES += [
      "!..",
      "../build",
 +    "/toolkit/xre",
  ]
-diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/librewolf-129.0-1/xpcom/io/nsAppFileLocationProvider.cpp
---- a/xpcom/io/nsAppFileLocationProvider.cpp	2024-08-01 20:32:14.000000000 +0300
-+++ b/xpcom/io/nsAppFileLocationProvider.cpp	2024-08-13 22:40:51.936285237 +0300
+diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
+--- a/xpcom/io/nsAppFileLocationProvider.cpp	2024-09-23 21:00:17.000000000 +0300
++++ b/xpcom/io/nsAppFileLocationProvider.cpp	2024-10-09 15:16:37.449607253 +0300
 @@ -13,6 +13,7 @@
  #include "nsIFile.h"
  #include "nsString.h"

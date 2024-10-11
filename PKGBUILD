@@ -95,7 +95,7 @@ sha256sums=('fc9c5e5d30102eea2d5944c2532f408610fa986a50ad8c94c8137679034dc290'
             '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
             '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1'
             'e8109bc6faabb2e86fa9665dfc088dff0844970c1e616ffa872eda881ddde740'
-            '9b514a379f1255f258b9b9a82e86ba0d4ef768f4eefdff6a039779e37649b4fb')
+            '91dd8989e8dd57b2d06333f8e171fc8cfaf866ab5a861175cae65f47a2d3bd3c')
 
 validpgpkeys=('034F7776EF5E0C613D2F7934D29FBD5F93C0CFC3') # maltej(?)
 
