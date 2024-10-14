@@ -3,7 +3,8 @@
 pkgname=librewolf
 _pkgname=LibreWolf
 pkgver=131.0.2
-pkgrel=1
+pkgrel=1.1
+_pkgrel=1
 pkgdesc="Community-maintained fork of Firefox, focused on privacy, security and freedom."
 url="https://librewolf.net/"
 arch=(x86_64 aarch64)
@@ -84,7 +85,7 @@ _arch_git=https://gitlab.archlinux.org/archlinux/packaging/packages/firefox/-/ra
 
 install='librewolf.install'
 source=(
-  https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/${pkgver}-${pkgrel}/librewolf-${pkgver}-${pkgrel}.source.tar.gz # {,.sig} sig files are currently broken, it seems
+  https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/${pkgver}-${_pkgrel}/librewolf-${pkgver}-${_pkgrel}.source.tar.gz # {,.sig} sig files are currently broken, it seems
   $pkgname.desktop
   "default192x192.png"
   remove_unneeded_locales.patch
@@ -105,8 +106,7 @@ _build_profiled_x86_64=true
 
 prepare() {
   mkdir -p mozbuild
-
-  cd librewolf-$pkgver-$pkgrel
+  cd librewolf-$pkgver-$_pkgrel
 
   patch -Np1 -i ../remove_unneeded_locales.patch
   patch -Np1 -i ../xdg_dirs.patch
@@ -183,7 +183,7 @@ fi
 
 
 build() {
-  cd librewolf-$pkgver-$pkgrel
+  cd librewolf-$pkgver-$_pkgrel
 
   export MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=pip
   export MOZBUILD_STATE_PATH="$srcdir/mozbuild"
@@ -231,6 +231,7 @@ END
     # LIBGL_ALWAYS_SOFTWARE=true \
     LLVM_PROFDATA=llvm-profdata \
       JARLOG_FILE="$PWD/jarlog" \
+      dbus-run-session \
       xvfb-run -s "-screen 0 1920x1080x24 -nolisten local" \
       ./mach python build/pgo/profileserver.py
 
@@ -274,7 +275,7 @@ END
 }
 
 package() {
-  cd librewolf-$pkgver-$pkgrel
+  cd librewolf-$pkgver-$_pkgrel
   DESTDIR="$pkgdir" ./mach install
 
   # mv ${pkgdir}/usr/local/lib ${pkgdir}/usr/lib/
