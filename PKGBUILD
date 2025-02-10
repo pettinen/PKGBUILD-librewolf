@@ -2,7 +2,7 @@
 
 pkgname=librewolf
 _pkgname=LibreWolf
-pkgver=134.0.2
+pkgver=135.0
 pkgrel=1
 pkgdesc="Community-maintained fork of Firefox, focused on privacy, security and freedom."
 url="https://librewolf.net/"
@@ -93,7 +93,7 @@ source=(
   "default192x192.png"
 )
 
-sha256sums=('146c61a725a849a6b0ffb8d85b3cea6b925bc5b21847c65b8ed5ae70e4ea8025'
+sha256sums=('d195ed879a969271d0afe2d63c08805ae6e0e16af2a80841475b1d97accd331f'
             '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
             '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1')
 
