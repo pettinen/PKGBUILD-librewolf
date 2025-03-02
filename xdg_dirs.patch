@@ -1,23 +1,29 @@
 diff --unified --recursive --text a/lw/librewolf.cfg b/lw/librewolf.cfg
---- a/lw/librewolf.cfg	2024-12-13 09:36:14.000000000 +0200
-+++ b/lw/librewolf.cfg	2024-12-20 15:04:06.190690231 +0200
-@@ -731,7 +731,10 @@
+--- a/lw/librewolf.cfg	2025-02-20 00:56:14.000000000 +0200
++++ b/lw/librewolf.cfg	2025-02-25 14:27:16.159089334 +0200
+@@ -718,10 +718,16 @@
   * allow settings to be overriden with a file placed in the right location
   * https://librewolf.net/docs/settings/#where-do-i-find-my-librewolfoverridescfg
-  */
+  * ------------------------------- */
 -let profile_directory;
--if (profile_directory = getenv('USERPROFILE') || getenv('HOME')) {
--  defaultPref('autoadmin.global_config_url', `file://${profile_directory}/.librewolf/librewolf.overrides.cfg`);
+-if ((profile_directory = getenv("USERPROFILE") || getenv("HOME"))) {
 +const configDirectory = getenv("XDG_CONFIG_HOME");
 +const profileDirectory = getenv("HOME") || getenv("USERPROFILE");
 +if (configDirectory) {
-+  defaultPref("autoadmin.global_config_url", `file://${configDirectory}/librewolf/librewolf.overrides.cfg`);
+   defaultPref(
+     "autoadmin.global_config_url",
+-    `file://${profile_directory}/.librewolf/librewolf.overrides.cfg`
++    `file://${configDirectory}/librewolf/librewolf.overrides.cfg`,
++  );
 +} else if (profileDirectory) {
-+  defaultPref("autoadmin.global_config_url", `file://${profileDirectory}/.config/librewolf/librewolf.overrides.cfg`);
++  defaultPref(
++    "autoadmin.global_config_url",
++    `file://${profileDirectory}/.config/librewolf/librewolf.overrides.cfg`,
+   );
  }
 diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
---- a/toolkit/xre/nsXREDirProvider.cpp	2024-12-13 09:36:14.000000000 +0200
-+++ b/toolkit/xre/nsXREDirProvider.cpp	2024-12-20 15:04:06.190690231 +0200
+--- a/toolkit/xre/nsXREDirProvider.cpp	2025-02-20 00:56:14.000000000 +0200
++++ b/toolkit/xre/nsXREDirProvider.cpp	2025-02-25 14:40:32.006230529 +0200
 @@ -11,6 +11,7 @@
  
  #include "jsapi.h"
@@ -26,7 +32,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  #include "prprf.h"
  
  #include "nsIAppStartup.h"
-@@ -88,6 +89,8 @@
+@@ -89,6 +90,8 @@
  #  define APP_REGISTRY_NAME "appreg"
  #endif
  
@@ -35,7 +41,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  #define PREF_OVERRIDE_DIRNAME "preferences"
  
  nsXREDirProvider* gDirServiceProvider = nullptr;
-@@ -367,8 +370,9 @@
+@@ -368,8 +371,9 @@
  #  if defined(XP_MACOSX)
      rv = file->AppendNative("LibreWolf"_ns);
  #  else   // defined(XP_MACOSX)
@@ -46,9 +52,9 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    }
  #endif  // defined(XP_UNIX) || defined(XP_MACOSX)
    else if (!strcmp(aProperty, XRE_UPDATE_ROOT_DIR)) {
-@@ -1087,28 +1091,24 @@
+@@ -1082,28 +1086,23 @@
  
-   rv = NS_NewLocalFile(path, getter_AddRefs(localDir));
+   MOZ_TRY(NS_NewLocalFile(path, getter_AddRefs(localDir)));
  #elif defined(XP_UNIX)
 -  const char* homeDir = getenv("HOME");
 +  const char* homeDir = PR_GetEnv("HOME");
@@ -58,36 +64,33 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
 -  aLocal = false;
 -#  endif
 -
-+  rv = NS_NewNativeLocalFile(nsDependentCString(homeDir),
-+                             getter_AddRefs(localDir));
-+  NS_ENSURE_SUCCESS(rv, rv);
++  MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(homeDir),
++                                getter_AddRefs(localDir)));
 +#  else
    if (aLocal) {
 -    // If $XDG_CACHE_HOME is defined use it, otherwise use $HOME/.cache.
 -    const char* cacheHome = getenv("XDG_CACHE_HOME");
 -    if (cacheHome && *cacheHome) {
--      rv = NS_NewNativeLocalFile(nsDependentCString(cacheHome),
--                                 getter_AddRefs(localDir));
+-      MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(cacheHome),
+-                                    getter_AddRefs(localDir)));
 -    } else {
--      rv = NS_NewNativeLocalFile(nsDependentCString(homeDir),
--                                 getter_AddRefs(localDir));
--      if (NS_SUCCEEDED(rv)) rv = localDir->AppendNative(".cache"_ns);
+-      MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(homeDir),
+-                                    getter_AddRefs(localDir)));
+-      MOZ_TRY(localDir->AppendNative(".cache"_ns));
 -    }
-+    rv = nsXREDirProvider::AppendXDGCachePath(homeDir,
-+                                              getter_AddRefs(localDir));
-+    NS_ENSURE_SUCCESS(rv, rv);
++    MOZ_TRY(nsXREDirProvider::AppendXDGCachePath(homeDir,
++                                                 getter_AddRefs(localDir)));
    } else {
--    rv = NS_NewNativeLocalFile(nsDependentCString(homeDir),
--                               getter_AddRefs(localDir));
-+    rv = nsXREDirProvider::AppendXDGHomePath(homeDir,
-+                                             getter_AddRefs(localDir));
-+    NS_ENSURE_SUCCESS(rv, rv);
+     MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(homeDir),
+                                   getter_AddRefs(localDir)));
++    MOZ_TRY(nsXREDirProvider::AppendXDGHomePath(homeDir,
++                                                getter_AddRefs(localDir)));
    }
 +#  endif  // ANDROID
  #else
  #  error "Don't know how to get product dir on your platform"
  #endif
-@@ -1197,8 +1197,7 @@
+@@ -1192,8 +1191,7 @@
  
  #if defined(XP_MACOSX) || defined(XP_WIN)
  
@@ -97,7 +100,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    NS_ENSURE_SUCCESS(rv, rv);
  
    static const char* const sExtensions = "Extensions";
-@@ -1207,8 +1206,7 @@
+@@ -1202,8 +1200,7 @@
  
  #elif defined(XP_UNIX)
  
@@ -107,7 +110,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    NS_ENSURE_SUCCESS(rv, rv);
  
    static const char* const sExtensions = "extensions";
-@@ -1221,6 +1219,91 @@
+@@ -1216,6 +1213,91 @@
    return NS_OK;
  }
  
@@ -199,7 +202,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  nsresult nsXREDirProvider::AppendProfilePath(nsIFile* aFile, bool aLocal) {
    NS_ASSERTION(aFile, "Null pointer!");
  
-@@ -1275,9 +1358,6 @@
+@@ -1270,9 +1352,6 @@
    NS_ENSURE_SUCCESS(rv, rv);
  #elif defined(XP_UNIX)
    nsAutoCString folder;
@@ -210,8 +213,8 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    if (!profile.IsEmpty()) {
      // Skip any leading path characters
 diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
---- a/toolkit/xre/nsXREDirProvider.h	2024-12-09 21:17:39.000000000 +0200
-+++ b/toolkit/xre/nsXREDirProvider.h	2024-12-20 15:04:06.190690231 +0200
+--- a/toolkit/xre/nsXREDirProvider.h	2025-02-17 01:07:12.000000000 +0200
++++ b/toolkit/xre/nsXREDirProvider.h	2025-02-25 14:28:47.449955966 +0200
 @@ -74,6 +74,14 @@
  
    static nsresult GetUserDataDirectory(nsIFile** aFile, bool aLocal);
@@ -228,8 +231,8 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre
    nsIFile* GetGREDir() { return mGREDir; }
    nsIFile* GetGREBinDir() { return mGREBinDir; }
 diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
---- a/xpcom/io/moz.build	2024-12-09 21:17:40.000000000 +0200
-+++ b/xpcom/io/moz.build	2024-12-20 15:05:20.631467480 +0200
+--- a/xpcom/io/moz.build	2025-02-17 01:07:13.000000000 +0200
++++ b/xpcom/io/moz.build	2025-02-25 14:20:27.245289867 +0200
 @@ -160,4 +160,5 @@
  LOCAL_INCLUDES += [
      "!..",
@@ -237,8 +240,8 @@ diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
 +    "/toolkit/xre",
  ]
 diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
---- a/xpcom/io/nsAppFileLocationProvider.cpp	2024-12-09 21:17:40.000000000 +0200
-+++ b/xpcom/io/nsAppFileLocationProvider.cpp	2024-12-20 15:04:06.190690231 +0200
+--- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-02-17 01:07:13.000000000 +0200
++++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-02-25 14:21:11.192356242 +0200
 @@ -13,6 +13,7 @@
  #include "nsIFile.h"
  #include "nsString.h"
@@ -247,7 +250,7 @@ diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpc
  #include "prenv.h"
  #include "nsCRT.h"
  #if defined(MOZ_WIDGET_COCOA)
-@@ -207,11 +208,17 @@
+@@ -204,11 +205,17 @@
      return rv;
    }
  #elif defined(XP_UNIX)

@@ -1,6 +1,6 @@
 diff --unified --recursive --text a/browser/locales/shipped-locales b/browser/locales/shipped-locales
---- a/browser/locales/shipped-locales	2024-08-01 20:31:55.000000000 +0300
-+++ b/browser/locales/shipped-locales	2024-08-14 03:20:48.769273354 +0300
+--- a/browser/locales/shipped-locales	2025-02-25 14:17:22.443642155 +0200
++++ b/browser/locales/shipped-locales	2025-02-25 14:18:32.464259511 +0200
 @@ -1,104 +1 @@
 -ach
 -af
