@@ -6,7 +6,11 @@
 
 pkgname=librewolf
 _pkgname=LibreWolf
-pkgver=136.0_1
+epoch=1
+pkgver=136.0.0_2
+_fixedfirefoxver="${pkgver%_*}" # Version of Firefox this LibreWolf version is based on, but the Firefox patch number is always included
+_librewolfver="${pkgver#*_}"
+_firefoxver="${_fixedfirefoxver%.0}" # Removes ".0" from the end. For "136.0.0" this will result in "136.0" but for "136.0.1" won't do anything.
 pkgrel=1
 pkgdesc="Community-maintained fork of Firefox, focused on privacy, security and freedom."
 url="https://librewolf.net/"
@@ -104,12 +108,12 @@ options=(
 
 install='librewolf.install'
 source=(
-  https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/${pkgver//_/-}/librewolf-${pkgver//_/-}.source.tar.gz # {,.sig} sig files are currently broken, it seems
+  https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/$_firefoxver-$_librewolfver/librewolf-$_firefoxver-$_librewolfver.source.tar.gz # {,.sig} sig files are currently broken, it seems
   $pkgname.desktop
   "default192x192.png"
 )
 
-sha256sums=('90df6cd83f772d8ac820a6800cbdcedc1940bd7a80646728788775bf946065bf'
+sha256sums=('16a97fe2f3898924829069764194750067ba8bad29ee4a71988b67ecc368543d'
             '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
             '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1')
 
@@ -118,7 +122,7 @@ validpgpkeys=('034F7776EF5E0C613D2F7934D29FBD5F93C0CFC3') # maltej(?)
 
 prepare() {
   mkdir -p mozbuild
-  cd librewolf-${pkgver//_/-}
+  cd librewolf-$_firefoxver-$_librewolfver
 
   mv mozconfig ../mozconfig
 
@@ -194,7 +198,7 @@ fi
 
 
 build() {
-  cd librewolf-${pkgver//_/-}
+  cd librewolf-$_firefoxver-$_librewolfver
 
   export MACH_BUILD_PYTHON_NATIVE_PACKAGE_SOURCE=pip
   export MOZBUILD_STATE_PATH="$srcdir/mozbuild"
@@ -310,7 +314,7 @@ END
 }
 
 package() {
-  cd librewolf-${pkgver//_/-}
+  cd librewolf-$_firefoxver-$_librewolfver
   DESTDIR="$pkgdir" ./mach install
 
   local vendorjs="$pkgdir/usr/lib/$pkgname/browser/defaults/preferences/vendor.js"
