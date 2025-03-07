@@ -125,6 +125,8 @@ prepare() {
   cd librewolf-${pkgver//_/-}
 
   patch -Np1 -i ../remove_unneeded_locales.patch
+
+  # https://phabricator.services.mozilla.com/D6995
   patch -Np1 -i ../xdg_dirs.patch
 
   mv mozconfig ../mozconfig
