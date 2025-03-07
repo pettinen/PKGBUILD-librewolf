@@ -1,58 +1,60 @@
-diff --unified --recursive --text a/lw/librewolf.cfg b/lw/librewolf.cfg
---- a/lw/librewolf.cfg	2025-02-20 00:56:14.000000000 +0200
-+++ b/lw/librewolf.cfg	2025-02-25 14:27:16.159089334 +0200
-@@ -718,10 +718,16 @@
-  * allow settings to be overriden with a file placed in the right location
-  * https://librewolf.net/docs/settings/#where-do-i-find-my-librewolfoverridescfg
-  * ------------------------------- */
--let profile_directory;
--if ((profile_directory = getenv("USERPROFILE") || getenv("HOME"))) {
-+const configDirectory = getenv("XDG_CONFIG_HOME");
-+const profileDirectory = getenv("HOME") || getenv("USERPROFILE");
-+if (configDirectory) {
-   defaultPref(
-     "autoadmin.global_config_url",
--    `file://${profile_directory}/.librewolf/librewolf.overrides.cfg`
-+    `file://${configDirectory}/librewolf/librewolf.overrides.cfg`,
-+  );
-+} else if (profileDirectory) {
-+  defaultPref(
-+    "autoadmin.global_config_url",
-+    `file://${profileDirectory}/.config/librewolf/librewolf.overrides.cfg`,
-   );
- }
-diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
---- a/toolkit/xre/nsXREDirProvider.cpp	2025-02-20 00:56:14.000000000 +0200
-+++ b/toolkit/xre/nsXREDirProvider.cpp	2025-02-25 14:40:32.006230529 +0200
-@@ -11,6 +11,7 @@
+diff --unified --recursive --text a/toolkit/moz.build b/toolkit/moz.build
+--- a/toolkit/moz.build	2025-02-27 20:17:51.000000000 +0200
++++ b/toolkit/moz.build	2025-03-07 14:50:12.430694309 +0200
+@@ -73,6 +73,9 @@
+     "crashreporter/test/browser/crashreport.sjs",
+ ]
  
++if CONFIG["ENABLE_TESTS"]:
++    DIRS += ["tests/gtest"]
++
+ with Files("docs/**"):
+     BUG_COMPONENT = ("Toolkit", "General")
+ 
+diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
+--- a/toolkit/xre/nsXREDirProvider.cpp	2025-03-06 00:09:28.000000000 +0200
++++ b/toolkit/xre/nsXREDirProvider.cpp	2025-03-07 14:50:12.434027675 +0200
+@@ -12,6 +12,7 @@
  #include "jsapi.h"
  #include "xpcpublic.h"
-+#include "prenv.h"
  #include "prprf.h"
++#include "prenv.h"
  
  #include "nsIAppStartup.h"
-@@ -89,6 +90,8 @@
- #  define APP_REGISTRY_NAME "appreg"
- #endif
+ #include "nsIFile.h"
+@@ -91,6 +92,9 @@
  
-+#define DEFAULT_PRODUCT_DIR nsLiteralCString(MOZ_USER_DIR)
-+
  #define PREF_OVERRIDE_DIRNAME "preferences"
  
++// define default product directory
++#define DEFAULT_PRODUCT_DIR nsLiteralCString(MOZ_USER_DIR)
++
  nsXREDirProvider* gDirServiceProvider = nullptr;
-@@ -368,8 +371,9 @@
+ nsIFile* gDataDirHomeLocal = nullptr;
+ nsIFile* gDataDirHome = nullptr;
+@@ -367,9 +371,10 @@
+     NS_ENSURE_SUCCESS(rv, rv);
  #  if defined(XP_MACOSX)
      rv = file->AppendNative("LibreWolf"_ns);
- #  else   // defined(XP_MACOSX)
+-#  else   // defined(XP_MACOSX)
 -    rv = file->AppendNative(".librewolf"_ns);
-+    rv = AppendXDGUserNativeManifest(file);
- #  endif  // defined(XP_MACOSX)
+-#  endif  // defined(XP_MACOSX)
++#  else
++    rv = AppendLegacyOrXDGUserNativeManifest(file);
++#  endif
 +    NS_ENSURE_SUCCESS(rv, rv);
    }
  #endif  // defined(XP_UNIX) || defined(XP_MACOSX)
    else if (!strcmp(aProperty, XRE_UPDATE_ROOT_DIR)) {
-@@ -1082,28 +1086,23 @@
+@@ -1026,6 +1031,7 @@
+   return NS_OK;
+ }
+ 
++// Return the home directory that will contain user data
+ nsresult nsXREDirProvider::GetUserDataDirectoryHome(nsIFile** aFile,
+                                                     bool aLocal) {
+   // Copied from nsAppFileLocationProvider (more or less)
+@@ -1082,28 +1088,21 @@
  
    MOZ_TRY(NS_NewLocalFile(path, getter_AddRefs(localDir)));
  #elif defined(XP_UNIX)
@@ -64,8 +66,8 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
 -  aLocal = false;
 -#  endif
 -
-+  MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(homeDir),
-+                                getter_AddRefs(localDir)));
++  rv = NS_NewNativeLocalFile(nsDependentCString(homeDir), true,
++                             getter_AddRefs(localDir));
 +#  else
    if (aLocal) {
 -    // If $XDG_CACHE_HOME is defined use it, otherwise use $HOME/.cache.
@@ -78,13 +80,13 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
 -                                    getter_AddRefs(localDir)));
 -      MOZ_TRY(localDir->AppendNative(".cache"_ns));
 -    }
-+    MOZ_TRY(nsXREDirProvider::AppendXDGCachePath(homeDir,
-+                                                 getter_AddRefs(localDir)));
++    MOZ_TRY(nsXREDirProvider::AppendLegacyOrXDGCachePath(
++        homeDir, getter_AddRefs(localDir)));
    } else {
-     MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(homeDir),
-                                   getter_AddRefs(localDir)));
-+    MOZ_TRY(nsXREDirProvider::AppendXDGHomePath(homeDir,
-+                                                getter_AddRefs(localDir)));
+-    MOZ_TRY(NS_NewNativeLocalFile(nsDependentCString(homeDir),
+-                                  getter_AddRefs(localDir)));
++    MOZ_TRY(nsXREDirProvider::AppendLegacyOrXDGHomePath(
++        homeDir, getter_AddRefs(localDir)));
    }
 +#  endif  // ANDROID
  #else
@@ -110,12 +112,12 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    NS_ENSURE_SUCCESS(rv, rv);
  
    static const char* const sExtensions = "extensions";
-@@ -1216,6 +1213,91 @@
+@@ -1216,6 +1213,146 @@
    return NS_OK;
  }
  
-+nsresult nsXREDirProvider::AppendXDGCachePath(const char* aHomeDir,
-+                                              nsIFile** aFile) {
++nsresult nsXREDirProvider::AppendLegacyOrXDGCachePath(const char* aHomeDir,
++                                                      nsIFile** aFile) {
 +  nsresult rv;
 +  nsCOMPtr<nsIFile> localDir;
 +  nsDependentCString homeDir(aHomeDir);
@@ -139,6 +141,47 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
 +  return rv;
 +}
 +
++/*
++ * Return whether MOZ_LEGACY_HOME == 1
++ */
++bool nsXREDirProvider::IsForceLegacyHome() {
++  const char* legacyhomedir = PR_GetEnv("MOZ_LEGACY_HOME");
++  return legacyhomedir && legacyhomedir[0] == '1';
++}
++
++/*
++ * Check if legacy ~/.librewolf/ exists
++ */
++bool nsXREDirProvider::LegacyHomeExists(const char* aHomeDir, nsIFile** aFile) {
++  bool exists;
++  nsDependentCString homeDir(aHomeDir);
++  nsCOMPtr<nsIFile> localDir;
++  nsCOMPtr<nsIFile> parentDir;
++
++  // check old config ~/.librewolf
++  nsresult rv = NS_NewNativeLocalFile(homeDir, getter_AddRefs(localDir));
++  NS_ENSURE_SUCCESS(rv, false);
++
++  // We hardcode because we want to control and not depend on what the user has
++  // provided via MOZ_USER_DIR and we want to check for legacy behavior
++  rv = localDir->AppendRelativeNativePath(".librewolf"_ns);
++  NS_ENSURE_SUCCESS(rv, false);
++
++  rv = localDir->Exists(&exists);
++  NS_ENSURE_SUCCESS(rv, false);
++
++  rv = localDir->GetParent(getter_AddRefs(parentDir));
++  if (aFile) {
++    parentDir.forget(aFile);
++  }
++  NS_ENSURE_SUCCESS(rv, false);
++
++  return exists;
++}
++
++/*
++ * Check if XDG_CONFIG_HOME is here and use it or default to ${aHomeDir}/.config
++ */
 +nsresult nsXREDirProvider::GetXDGConfigHome(const char* aHomeDir,
 +                                            nsIFile** aFile) {
 +  nsresult rv;
@@ -162,14 +205,22 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
 +  return rv;
 +}
 +
-+nsresult nsXREDirProvider::AppendXDGHomePath(const char* aHomeDir,
-+                                             nsIFile** aFile) {
++// Attempt to construct the HOME path depending on XDG or legacy status.
++nsresult nsXREDirProvider::AppendLegacyOrXDGHomePath(const char* aHomeDir,
++                                                     nsIFile** aFile) {
 +  nsresult rv;
 +  nsCOMPtr<nsIFile> parentDir;
 +  nsDependentCString homeDir(aHomeDir);
 +
++  bool exists = LegacyHomeExists(aHomeDir, getter_AddRefs(parentDir));
++  if (exists || IsForceLegacyHome()) {
++    parentDir.forget(aFile);
++    return NS_OK;
++  }
++
 +  nsCOMPtr<nsIFile> localDir;
 +
++  // legacy directory does not exists and we are not forcing it  use new config
 +  rv = GetXDGConfigHome(aHomeDir, getter_AddRefs(localDir));
 +  NS_ENSURE_SUCCESS(rv, rv);
 +
@@ -188,11 +239,17 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
 +}
 +
 +#if defined(XP_UNIX)
-+nsresult nsXREDirProvider::AppendXDGUserNativeManifest(nsIFile* aFile) {
++nsresult nsXREDirProvider::AppendLegacyOrXDGUserNativeManifest(nsIFile* aFile) {
 +  nsresult rv;
 +  nsCOMPtr<nsIFile> parentDir;
 +
-+  rv = aFile->AppendNative(DEFAULT_PRODUCT_DIR);
++  bool exists =
++      LegacyHomeExists(aFile->NativePath().get(), getter_AddRefs(parentDir));
++  if (exists || IsForceLegacyHome()) {
++    rv = aFile->AppendNative(".librewolf"_ns);
++  } else {
++    rv = aFile->AppendNative(DEFAULT_PRODUCT_DIR);
++  }
 +  NS_ENSURE_SUCCESS(rv, rv);
 +
 +  return rv;
@@ -202,37 +259,65 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  nsresult nsXREDirProvider::AppendProfilePath(nsIFile* aFile, bool aLocal) {
    NS_ASSERTION(aFile, "Null pointer!");
  
-@@ -1270,9 +1352,6 @@
-   NS_ENSURE_SUCCESS(rv, rv);
- #elif defined(XP_UNIX)
+@@ -1272,7 +1409,9 @@
    nsAutoCString folder;
--  // Make it hidden (by starting with "."), except when local (the
--  // profile is already under ~/.cache or XDG_CACHE_HOME).
+   // Make it hidden (by starting with "."), except when local (the
+   // profile is already under ~/.cache or XDG_CACHE_HOME).
 -  if (!aLocal) folder.Assign('.');
++  if (!aLocal && (IsForceLegacyHome() ||
++                  LegacyHomeExists(aFile->NativePath().get(), nullptr)))
++    folder.Assign('.');
  
    if (!profile.IsEmpty()) {
      // Skip any leading path characters
 diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
---- a/toolkit/xre/nsXREDirProvider.h	2025-02-17 01:07:12.000000000 +0200
-+++ b/toolkit/xre/nsXREDirProvider.h	2025-02-25 14:28:47.449955966 +0200
-@@ -74,6 +74,14 @@
+--- a/toolkit/xre/nsXREDirProvider.h	2025-02-27 20:17:52.000000000 +0200
++++ b/toolkit/xre/nsXREDirProvider.h	2025-03-07 14:50:12.430694309 +0200
+@@ -19,12 +19,8 @@
+ #endif
+ 
+ // {5573967d-f6cf-4c63-8e0e-9ac06e04d62b}
+-#define NS_XREDIRPROVIDER_CID                        \
+-  {                                                  \
+-    0x5573967d, 0xf6cf, 0x4c63, {                    \
+-      0x8e, 0x0e, 0x9a, 0xc0, 0x6e, 0x04, 0xd6, 0x2b \
+-    }                                                \
+-  }
++#define NS_XREDIRPROVIDER_CID \
++  {0x5573967d, 0xf6cf, 0x4c63, {0x8e, 0x0e, 0x9a, 0xc0, 0x6e, 0x04, 0xd6, 0x2b}}
+ #define NS_XREDIRPROVIDER_CONTRACTID "@mozilla.org/xre/directory-provider;1"
+ 
+ class nsXREDirProvider final : public nsIDirectoryServiceProvider2,
+@@ -74,6 +70,18 @@
  
    static nsresult GetUserDataDirectory(nsIFile** aFile, bool aLocal);
  
-+  static nsresult AppendXDGCachePath(const char* aHomeDir, nsIFile** aFile);
++  static nsresult AppendLegacyOrXDGCachePath(const char* aHomeDir,
++                                             nsIFile** aFile);
++  static nsresult AppendLegacyOrXDGHomePath(const char* aHomeDir,
++                                            nsIFile** aFile);
++  static nsresult AppendLegacyOrXDGUserNativeManifest(nsIFile* aFile);
 +
-+  static nsresult AppendXDGHomePath(const char* aHomeDir, nsIFile** aFile);
++  static bool IsForceLegacyHome();
 +
-+  static nsresult AppendXDGUserNativeManifest(nsIFile* aFile);
++  static bool LegacyHomeExists(const char* aHomeDir, nsIFile** aFile);
 +
 +  static nsresult GetXDGConfigHome(const char* aHomeDir, nsIFile** aFile);
 +
    /* make sure you clone it, if you need to do stuff to it */
    nsIFile* GetGREDir() { return mGREDir; }
    nsIFile* GetGREBinDir() { return mGREBinDir; }
+@@ -113,6 +121,7 @@
+   nsresult GetFilesInternal(const char* aProperty,
+                             nsISimpleEnumerator** aResult);
+   static nsresult GetUserDataDirectoryHome(nsIFile** aFile, bool aLocal);
++  static nsresult GetNativeUserManifestsDirectory(nsIFile** aFile);
+   static nsresult GetSysUserExtensionsDirectory(nsIFile** aFile);
+ #if defined(XP_UNIX) || defined(XP_MACOSX)
+   static nsresult GetSystemExtensionsDirectory(nsIFile** aFile);
 diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
---- a/xpcom/io/moz.build	2025-02-17 01:07:13.000000000 +0200
-+++ b/xpcom/io/moz.build	2025-02-25 14:20:27.245289867 +0200
+--- a/xpcom/io/moz.build	2025-02-27 20:17:52.000000000 +0200
++++ b/xpcom/io/moz.build	2025-03-07 14:50:12.434027675 +0200
 @@ -160,4 +160,5 @@
  LOCAL_INCLUDES += [
      "!..",
@@ -240,8 +325,8 @@ diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
 +    "/toolkit/xre",
  ]
 diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
---- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-02-17 01:07:13.000000000 +0200
-+++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-02-25 14:21:11.192356242 +0200
+--- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-02-27 20:17:52.000000000 +0200
++++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-03-07 14:50:12.434027675 +0200
 @@ -13,6 +13,7 @@
  #include "nsIFile.h"
  #include "nsString.h"
@@ -250,7 +335,21 @@ diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpc
  #include "prenv.h"
  #include "nsCRT.h"
  #if defined(MOZ_WIDGET_COCOA)
-@@ -204,11 +205,17 @@
+@@ -168,9 +169,10 @@
+ // GetProductDirectory - Gets the directory which contains the application data
+ // folder
+ //
+-// UNIX   : ~/.mozilla/
+-// WIN    : <Application Data folder on user's machine>\Mozilla
+-// Mac    : :Documents:Mozilla:
++// UNIX   : ~/.librewolf/ or ${XDG_CONFIG_HOME:-~/.config}/librewolf
++//          if env var MOZ_LEGACY_HOME is set to 1, then ~/.librewolf/ is used
++// WIN    : <Application Data folder on user's machine>\LibreWolf
++// Mac    : :Documents:LibreWolf:
+ //----------------------------------------------------------------------------------------
+ nsresult nsAppFileLocationProvider::GetProductDirectory(nsIFile** aLocalFile,
+                                                         bool aLocal) {
+@@ -204,11 +206,18 @@
      return rv;
    }
  #elif defined(XP_UNIX)
@@ -262,10 +361,35 @@ diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpc
      return rv;
    }
 +
-+  rv = nsXREDirProvider::AppendXDGHomePath(homeDir, getter_AddRefs(localDir));
++  rv = nsXREDirProvider::AppendLegacyOrXDGHomePath(homeDir,
++                                                   getter_AddRefs(localDir));
 +  if (NS_FAILED(rv)) {
 +    return rv;
 +  }
  #else
  #  error dont_know_how_to_get_product_dir_on_your_platform
  #endif
+@@ -217,8 +226,8 @@
+   if (NS_FAILED(rv)) {
+     return rv;
+   }
+-  rv = localDir->Exists(&exists);
+ 
++  rv = localDir->Exists(&exists);
+   if (NS_SUCCEEDED(rv) && !exists) {
+     rv = localDir->Create(nsIFile::DIRECTORY_TYPE, 0700);
+   }
+@@ -236,9 +245,10 @@
+ // GetDefaultUserProfileRoot - Gets the directory which contains each user
+ // profile dir
+ //
+-// UNIX   : ~/.mozilla/
+-// WIN    : <Application Data folder on user's machine>\Mozilla\Profiles
+-// Mac    : :Documents:Mozilla:Profiles:
++// UNIX   : ~/.librewolf/ or ${XDG_CONFIG_HOME:-~/.config}/librewolf
++//          if env var MOZ_LEGACY_HOME is set to 1, then ~/.librewolf/ is used
++// WIN    : <Application Data folder on user's machine>\LibreWolf\Profiles
++// Mac    : :Documents:LibreWolf:Profiles:
+ //----------------------------------------------------------------------------------------
+ nsresult nsAppFileLocationProvider::GetDefaultUserProfileRoot(
+     nsIFile** aLocalFile, bool aLocal) {
