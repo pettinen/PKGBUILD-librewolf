@@ -1,6 +1,6 @@
 diff --unified --recursive --text a/toolkit/moz.build b/toolkit/moz.build
---- a/toolkit/moz.build	2025-02-27 20:17:51.000000000 +0200
-+++ b/toolkit/moz.build	2025-03-07 14:50:12.430694309 +0200
+--- a/toolkit/moz.build	2025-04-07 19:07:15.000000000 +0300
++++ b/toolkit/moz.build	2025-04-12 08:34:12.904075676 +0300
 @@ -73,6 +73,9 @@
      "crashreporter/test/browser/crashreport.sjs",
  ]
@@ -12,8 +12,8 @@ diff --unified --recursive --text a/toolkit/moz.build b/toolkit/moz.build
      BUG_COMPONENT = ("Toolkit", "General")
  
 diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
---- a/toolkit/xre/nsXREDirProvider.cpp	2025-03-06 00:09:28.000000000 +0200
-+++ b/toolkit/xre/nsXREDirProvider.cpp	2025-03-07 14:50:12.434027675 +0200
+--- a/toolkit/xre/nsXREDirProvider.cpp	2025-04-09 13:10:18.000000000 +0300
++++ b/toolkit/xre/nsXREDirProvider.cpp	2025-04-12 08:34:12.904361220 +0300
 @@ -12,6 +12,7 @@
  #include "jsapi.h"
  #include "xpcpublic.h"
@@ -46,7 +46,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    }
  #endif  // defined(XP_UNIX) || defined(XP_MACOSX)
    else if (!strcmp(aProperty, XRE_UPDATE_ROOT_DIR)) {
-@@ -1026,6 +1031,7 @@
+@@ -1020,6 +1025,7 @@
    return NS_OK;
  }
  
@@ -54,7 +54,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  nsresult nsXREDirProvider::GetUserDataDirectoryHome(nsIFile** aFile,
                                                      bool aLocal) {
    // Copied from nsAppFileLocationProvider (more or less)
-@@ -1082,28 +1088,21 @@
+@@ -1076,28 +1082,21 @@
  
    MOZ_TRY(NS_NewLocalFile(path, getter_AddRefs(localDir)));
  #elif defined(XP_UNIX)
@@ -92,7 +92,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  #else
  #  error "Don't know how to get product dir on your platform"
  #endif
-@@ -1192,8 +1191,7 @@
+@@ -1186,8 +1185,7 @@
  
  #if defined(XP_MACOSX) || defined(XP_WIN)
  
@@ -102,7 +102,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    NS_ENSURE_SUCCESS(rv, rv);
  
    static const char* const sExtensions = "Extensions";
-@@ -1202,8 +1200,7 @@
+@@ -1196,8 +1194,7 @@
  
  #elif defined(XP_UNIX)
  
@@ -112,7 +112,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    NS_ENSURE_SUCCESS(rv, rv);
  
    static const char* const sExtensions = "extensions";
-@@ -1216,6 +1213,146 @@
+@@ -1210,6 +1207,146 @@
    return NS_OK;
  }
  
@@ -259,7 +259,7 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  nsresult nsXREDirProvider::AppendProfilePath(nsIFile* aFile, bool aLocal) {
    NS_ASSERTION(aFile, "Null pointer!");
  
-@@ -1272,7 +1409,9 @@
+@@ -1262,7 +1399,9 @@
    nsAutoCString folder;
    // Make it hidden (by starting with "."), except when local (the
    // profile is already under ~/.cache or XDG_CACHE_HOME).
@@ -271,8 +271,8 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
    if (!profile.IsEmpty()) {
      // Skip any leading path characters
 diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
---- a/toolkit/xre/nsXREDirProvider.h	2025-02-27 20:17:52.000000000 +0200
-+++ b/toolkit/xre/nsXREDirProvider.h	2025-03-07 14:50:12.430694309 +0200
+--- a/toolkit/xre/nsXREDirProvider.h	2025-04-07 19:07:15.000000000 +0300
++++ b/toolkit/xre/nsXREDirProvider.h	2025-04-12 08:34:12.904753363 +0300
 @@ -19,12 +19,8 @@
  #endif
  
@@ -316,17 +316,17 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre
  #if defined(XP_UNIX) || defined(XP_MACOSX)
    static nsresult GetSystemExtensionsDirectory(nsIFile** aFile);
 diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
---- a/xpcom/io/moz.build	2025-02-27 20:17:52.000000000 +0200
-+++ b/xpcom/io/moz.build	2025-03-07 14:50:12.434027675 +0200
-@@ -160,4 +160,5 @@
+--- a/xpcom/io/moz.build	2025-04-07 19:07:15.000000000 +0300
++++ b/xpcom/io/moz.build	2025-04-12 08:34:12.904975336 +0300
+@@ -165,4 +165,5 @@
  LOCAL_INCLUDES += [
      "!..",
      "../build",
 +    "/toolkit/xre",
  ]
 diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
---- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-02-27 20:17:52.000000000 +0200
-+++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-03-07 14:50:12.434027675 +0200
+--- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-04-07 19:07:16.000000000 +0300
++++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-04-12 08:34:12.905269709 +0300
 @@ -13,6 +13,7 @@
  #include "nsIFile.h"
  #include "nsString.h"
