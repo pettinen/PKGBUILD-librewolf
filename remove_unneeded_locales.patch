@@ -1,6 +1,6 @@
-diff --unified --recursive --text a/browser/locales/shipped-locales b/browser/locales/shipped-locales
---- a/browser/locales/shipped-locales	2025-02-25 14:17:22.443642155 +0200
-+++ b/browser/locales/shipped-locales	2025-02-25 14:18:32.464259511 +0200
+diff --recursive --text --unified a/browser/locales/shipped-locales b/browser/locales/shipped-locales
+--- a/browser/locales/shipped-locales	2025-05-01 01:57:56.000000000 +0300
++++ b/browser/locales/shipped-locales	2025-05-08 06:46:55.454887628 +0300
 @@ -1,104 +1 @@
 -ach
 -af

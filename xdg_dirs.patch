@@ -1,6 +1,6 @@
-diff --unified --recursive --text a/toolkit/moz.build b/toolkit/moz.build
---- a/toolkit/moz.build	2025-04-07 19:07:15.000000000 +0300
-+++ b/toolkit/moz.build	2025-04-12 08:34:12.904075676 +0300
+diff --recursive --text --unified a/toolkit/moz.build b/toolkit/moz.build
+--- a/toolkit/moz.build	2025-05-01 01:58:15.000000000 +0300
++++ b/toolkit/moz.build	2025-05-08 06:47:05.103725090 +0300
 @@ -73,6 +73,9 @@
      "crashreporter/test/browser/crashreport.sjs",
  ]
@@ -11,9 +11,9 @@ diff --unified --recursive --text a/toolkit/moz.build b/toolkit/moz.build
  with Files("docs/**"):
      BUG_COMPONENT = ("Toolkit", "General")
  
-diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
---- a/toolkit/xre/nsXREDirProvider.cpp	2025-04-09 13:10:18.000000000 +0300
-+++ b/toolkit/xre/nsXREDirProvider.cpp	2025-04-12 08:34:12.904361220 +0300
+diff --recursive --text --unified a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
+--- a/toolkit/xre/nsXREDirProvider.cpp	2025-05-04 00:22:35.000000000 +0300
++++ b/toolkit/xre/nsXREDirProvider.cpp	2025-05-08 06:47:05.105819168 +0300
 @@ -12,6 +12,7 @@
  #include "jsapi.h"
  #include "xpcpublic.h"
@@ -270,9 +270,9 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/x
  
    if (!profile.IsEmpty()) {
      // Skip any leading path characters
-diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
---- a/toolkit/xre/nsXREDirProvider.h	2025-04-07 19:07:15.000000000 +0300
-+++ b/toolkit/xre/nsXREDirProvider.h	2025-04-12 08:34:12.904753363 +0300
+diff --recursive --text --unified a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
+--- a/toolkit/xre/nsXREDirProvider.h	2025-05-01 01:58:14.000000000 +0300
++++ b/toolkit/xre/nsXREDirProvider.h	2025-05-08 06:47:05.106320511 +0300
 @@ -19,12 +19,8 @@
  #endif
  
@@ -315,18 +315,18 @@ diff --unified --recursive --text a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre
    static nsresult GetSysUserExtensionsDirectory(nsIFile** aFile);
  #if defined(XP_UNIX) || defined(XP_MACOSX)
    static nsresult GetSystemExtensionsDirectory(nsIFile** aFile);
-diff --unified --recursive --text a/xpcom/io/moz.build b/xpcom/io/moz.build
---- a/xpcom/io/moz.build	2025-04-07 19:07:15.000000000 +0300
-+++ b/xpcom/io/moz.build	2025-04-12 08:34:12.904975336 +0300
+diff --recursive --text --unified a/xpcom/io/moz.build b/xpcom/io/moz.build
+--- a/xpcom/io/moz.build	2025-05-01 01:58:14.000000000 +0300
++++ b/xpcom/io/moz.build	2025-05-08 06:47:05.106581907 +0300
 @@ -165,4 +165,5 @@
  LOCAL_INCLUDES += [
      "!..",
      "../build",
 +    "/toolkit/xre",
  ]
-diff --unified --recursive --text a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
---- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-04-07 19:07:16.000000000 +0300
-+++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-04-12 08:34:12.905269709 +0300
+diff --recursive --text --unified a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
+--- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-05-01 01:58:14.000000000 +0300
++++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-05-08 06:47:05.106827908 +0300
 @@ -13,6 +13,7 @@
  #include "nsIFile.h"
  #include "nsString.h"
