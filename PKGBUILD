@@ -111,14 +111,12 @@ source=(
   https://gitlab.com/api/v4/projects/32320088/packages/generic/librewolf-source/$_firefoxver-$_librewolfver/librewolf-$_firefoxver-$_librewolfver.source.tar.gz # {,.sig} sig files are currently broken, it seems
   $pkgname.desktop
   default192x192.png
-  remove_unneeded_locales.patch
   xdg_dirs.patch
 )
 
 sha256sums=('014d8a6755d763dc2e948672691d701b1e1cd2c3b7af1c7cb89321738ddbf26b'
             '7d01d317b7db7416783febc18ee1237ade2ec86c1567e2c2dd628a94cbf2f25d'
             '959c94c68cab8d5a8cff185ddf4dca92e84c18dccc6dc7c8fe11c78549cdc2f1'
-            'c6af28ab038e0cf904e42b2032fa9851ee442943e8804fd190923c4c1fd71e9c'
             'd1db53a1f4c02fd8be0bcf56c51f46486f49d1f210b1db6ea5b256936d11526f')
 
 validpgpkeys=('034F7776EF5E0C613D2F7934D29FBD5F93C0CFC3') # maltej(?)
@@ -127,8 +125,6 @@ validpgpkeys=('034F7776EF5E0C613D2F7934D29FBD5F93C0CFC3') # maltej(?)
 prepare() {
   mkdir -p mozbuild
   cd librewolf-$_firefoxver-$_librewolfver
-
-  patch -Np1 -i ../remove_unneeded_locales.patch
 
   # https://phabricator.services.mozilla.com/D6995
   patch -Np1 -i ../xdg_dirs.patch
