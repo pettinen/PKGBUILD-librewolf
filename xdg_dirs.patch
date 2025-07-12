@@ -1,6 +1,6 @@
 diff --recursive --text --unified --new-file a/browser/app/profile/firefox.js b/browser/app/profile/firefox.js
 --- a/browser/app/profile/firefox.js	2025-06-27 16:36:48.000000000 +0300
-+++ b/browser/app/profile/firefox.js	2025-07-11 18:03:55.006286200 +0300
++++ b/browser/app/profile/firefox.js	2025-07-11 22:32:20.239905128 +0300
 @@ -3361,3 +3361,10 @@
  // rotation altogether.
  pref("browser.contextual-services.contextId.rotation-in-days", 0);
@@ -14,7 +14,7 @@ diff --recursive --text --unified --new-file a/browser/app/profile/firefox.js b/
 +#endif
 diff --recursive --text --unified --new-file a/toolkit/moz.configure b/toolkit/moz.configure
 --- a/toolkit/moz.configure	2025-06-28 17:49:51.000000000 +0300
-+++ b/toolkit/moz.configure	2025-07-11 18:03:55.007938463 +0300
++++ b/toolkit/moz.configure	2025-07-11 22:32:20.240905139 +0300
 @@ -3835,7 +3835,9 @@
      def default_user_appdir(target):
          if target.kernel in ("WINNT", "Darwin"):
@@ -41,7 +41,7 @@ diff --recursive --text --unified --new-file a/toolkit/moz.configure b/toolkit/m
  # Check for sin_len and sin6_len - used by SCTP; only appears in Mac/*BSD generally
 diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp b/toolkit/xre/nsXREDirProvider.cpp
 --- a/toolkit/xre/nsXREDirProvider.cpp	2025-06-28 17:49:51.000000000 +0300
-+++ b/toolkit/xre/nsXREDirProvider.cpp	2025-07-11 18:03:55.008542222 +0300
++++ b/toolkit/xre/nsXREDirProvider.cpp	2025-07-11 22:32:20.241689250 +0300
 @@ -12,6 +12,7 @@
  #include "jsapi.h"
  #include "xpcpublic.h"
@@ -55,7 +55,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp 
      rv = ::GetSystemParentDirectory(getter_AddRefs(file), "Mozilla"_ns);
    } else if (!strcmp(aProperty, XRE_USER_NATIVE_MANIFESTS)) {
 -    rv = GetUserDataDirectoryHome(getter_AddRefs(file), false);
-+    rv = GetUserDataDirectoryHome(getter_Addrefs(file), false, true);
++    rv = GetUserDataDirectoryHome(getter_AddRefs(file), false, true);
      NS_ENSURE_SUCCESS(rv, rv);
  #  if defined(XP_MACOSX)
      rv = file->AppendNative("LibreWolf"_ns);
@@ -116,7 +116,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp 
    NS_ENSURE_SUCCESS(rv, rv);
  
    rv = AppendSysUserExtensionPath(localDir);
-@@ -1223,6 +1218,194 @@
+@@ -1223,6 +1218,181 @@
    return NS_OK;
  }
  
@@ -245,15 +245,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp 
 +/* static */
 +nsresult nsXREDirProvider::GetLegacyOrXDGConfigHome(const char* aHomeDir,
 +                                                    nsIFile** aFile) {
-+  bool wasFromEnv = false;
-+  nsresult rv = GetLegacyOrXDGEnvValue(aHomeDir, "XDG_CONFIG_HOME",
-+                                       ".config"_ns, aFile, &wasFromEnv);
-+  if (wasFromEnv) {
-+    MaybeRecordXdgTelemetry(legacyOrXDGHomeTelemetry::xdgConfigHome);
-+  } else {
-+    MaybeRecordXdgTelemetry(legacyOrXDGHomeTelemetry::xdgDefault);
-+  }
-+  return rv;
++  return GetLegacyOrXDGEnvValue(aHomeDir, "XDG_CONFIG_HOME", ".config"_ns, aFile);
 +}
 +
 +// Attempt to construct the HOME path depending on XDG or legacy status.
@@ -265,11 +257,6 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp 
 +
 +  bool exists = LegacyHomeExists(getter_AddRefs(parentDir));
 +  if (exists || IsForceLegacyHome() || aForceLegacy) {
-+    if (exists) {
-+      MaybeRecordXdgTelemetry(legacyOrXDGHomeTelemetry::legacyExists);
-+    } else {
-+      MaybeRecordXdgTelemetry(legacyOrXDGHomeTelemetry::legacyForced);
-+    }
 +    parentDir.forget(aFile);
 +    return NS_OK;
 +  }
@@ -311,7 +298,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp 
  nsresult nsXREDirProvider::AppendProfilePath(nsIFile* aFile, bool aLocal) {
    NS_ASSERTION(aFile, "Null pointer!");
  
-@@ -1275,7 +1458,13 @@
+@@ -1275,7 +1445,13 @@
    nsAutoCString folder;
    // Make it hidden (by starting with "."), except when local (the
    // profile is already under ~/.cache or XDG_CACHE_HOME).
@@ -328,7 +315,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.cpp 
      // Skip any leading path characters
 diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.h b/toolkit/xre/nsXREDirProvider.h
 --- a/toolkit/xre/nsXREDirProvider.h	2025-06-27 16:37:07.000000000 +0300
-+++ b/toolkit/xre/nsXREDirProvider.h	2025-07-11 18:03:55.008289930 +0300
++++ b/toolkit/xre/nsXREDirProvider.h	2025-07-11 22:32:20.241989222 +0300
 @@ -70,6 +70,25 @@
  
    static nsresult GetUserDataDirectory(nsIFile** aFile, bool aLocal);
@@ -372,7 +359,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/nsXREDirProvider.h b/
    static nsresult GetSystemExtensionsDirectory(nsIFile** aFile);
 diff --recursive --text --unified --new-file a/toolkit/xre/test/browser.toml b/toolkit/xre/test/browser.toml
 --- a/toolkit/xre/test/browser.toml	2025-06-27 16:37:07.000000000 +0300
-+++ b/toolkit/xre/test/browser.toml	2025-07-11 18:03:55.008765999 +0300
++++ b/toolkit/xre/test/browser.toml	2025-07-11 22:32:20.242169644 +0300
 @@ -4,3 +4,6 @@
  ["browser_checkdllblockliststate.js"]
  run-if = ["os == 'win'"]
@@ -382,7 +369,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/test/browser.toml b/t
 +run-if = ["os == 'linux'"]
 diff --recursive --text --unified --new-file a/toolkit/xre/test/browser_xdg_pref.js b/toolkit/xre/test/browser_xdg_pref.js
 --- a/toolkit/xre/test/browser_xdg_pref.js	1970-01-01 02:00:00.000000000 +0200
-+++ b/toolkit/xre/test/browser_xdg_pref.js	2025-07-11 18:03:55.008810315 +0300
++++ b/toolkit/xre/test/browser_xdg_pref.js	2025-07-11 22:32:20.242264337 +0300
 @@ -0,0 +1,11 @@
 +// Any copyright is dedicated to the Public Domain.
 +// http://creativecommons.org/publicdomain/zero/1.0/
@@ -397,7 +384,7 @@ diff --recursive --text --unified --new-file a/toolkit/xre/test/browser_xdg_pref
 +});
 diff --recursive --text --unified --new-file a/xpcom/io/moz.build b/xpcom/io/moz.build
 --- a/xpcom/io/moz.build	2025-06-27 16:37:07.000000000 +0300
-+++ b/xpcom/io/moz.build	2025-07-11 18:03:55.009009344 +0300
++++ b/xpcom/io/moz.build	2025-07-11 22:32:20.242419169 +0300
 @@ -165,4 +165,5 @@
  LOCAL_INCLUDES += [
      "!..",
@@ -406,7 +393,7 @@ diff --recursive --text --unified --new-file a/xpcom/io/moz.build b/xpcom/io/moz
  ]
 diff --recursive --text --unified --new-file a/xpcom/io/nsAppFileLocationProvider.cpp b/xpcom/io/nsAppFileLocationProvider.cpp
 --- a/xpcom/io/nsAppFileLocationProvider.cpp	2025-06-27 16:37:08.000000000 +0300
-+++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-07-11 18:03:55.009184644 +0300
++++ b/xpcom/io/nsAppFileLocationProvider.cpp	2025-07-11 22:32:20.242585003 +0300
 @@ -13,6 +13,7 @@
  #include "nsIFile.h"
  #include "nsString.h"
